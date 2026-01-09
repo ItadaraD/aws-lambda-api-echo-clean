@@ -1,37 +1,181 @@
-# AWS Lambda Echo API
+# AWS Lambda API Echo (Terraform)
 
-**Descrição**  
-Este projeto demonstra a criação de uma **API Serverless** utilizando **AWS Lambda** e **API Gateway**. O objetivo do projeto é criar uma API simples para receber e retornar dados usando a arquitetura Serverless da AWS.
+Este projeto provisiona uma **API HTTP usando API Gateway v2** integrada a uma **AWS Lambda em Python**, totalmente gerenciada via **Terraform**.
 
----
-
-## 🚀 Funcionalidades
-
-- **GET /health** – Endpoint para verificação de saúde da API.
-- **POST /v1/echo** – Endpoint que recebe um JSON e retorna o mesmo conteúdo enviado.
-- **Validação de entrada**: Verificação de presença do campo `message` e validação do formato JSON.
-- **Logs**: Utilização de **CloudWatch Logs** para rastrear eventos da API e da Lambda.
+O objetivo é servir como um **template simples, funcional e seguro** para criar APIs serverless na AWS, com controle de custos e boas práticas desde o início.
 
 ---
 
 ## 🧱 Arquitetura
 
-Este projeto utiliza a arquitetura Serverless com as seguintes tecnologias:
+* **AWS Lambda (Python 3.11)**
+* **API Gateway v2 (HTTP API)**
+* **CloudWatch Logs**
+* **Terraform** como IaC (Infrastructure as Code)
 
-- **AWS Lambda** – Processamento das requisições
-- **API Gateway** – Exposição dos endpoints HTTP
-- **CloudWatch** – Logs e rastreamento de eventos
+Fluxo:
 
-### Diagrama (opcional)
-Você pode adicionar um diagrama aqui, para ilustrar como as requisições são processadas.
+```
+Client -> API Gateway (/health, /echo) -> Lambda -> Response
+```
 
-**Diagrama de arquitetura:**
+---
+
+## 📁 Estrutura do Projeto
+
+```
+aws-lambda-api-echo/
+│
+├── lambda/
+│   └── main.py               # Código da Lambda
+│
+├── terraform/
+│   ├── api.tf                # API Gateway HTTP
+│   ├── iam.tf                # Roles e policies
+│   ├── lambda.tf             # Função Lambda
+│   ├── lambda_permission.tf  # Permissão API → Lambda
+│   ├── logs.tf               # CloudWatch Logs
+│   ├── outputs.tf            # Outputs (URL da API)
+│   ├── provider.tf           # Provider AWS
+│   ├── routes.tf             # Rotas da API
+│   ├── variables.tf          # Variáveis
+│   └── terraform.tfstate*    # State (não versionar)
+│
+├── tests/                     # (Opcional)
+├── .gitignore
+└── README.md
+```
+
+---
+
+## 🚀 Endpoints
+
+### `GET /health`
+
+Endpoint de verificação de saúde.
+
+**Resposta esperada:**
+
+```json
+{
+  "message": "Echo Lambda is alive"
+}
+```
+
+---
+
+### `GET /echo`
+
+Retorna informações completas da requisição recebida (headers, path, método, etc).
+
+Útil para:
+
+* Debug
+* Testes de integração
+* Aprender o formato de eventos da API Gateway
+
+---
+
+## ⚙️ Pré-requisitos
+
+* Conta AWS ativa
+* AWS CLI configurada (`aws configure`)
+* Terraform >= 1.5
+* Python 3.11
+
+---
+
+## 🔐 Custos e Segurança
+
+Este projeto foi criado com **controle de custos desde o início**:
+
+* Uso de **HTTP API** (mais barata que REST API)
+* Lambda com:
+
+  * 128 MB de memória
+  * Execução curta
+* Budget configurado:
+
+  * **Zero Spend Budget (alerta acima de $0.01)**
+* Uso de **AWS Credits** (Free Tier / Promotional Credits)
+
+> ⚠️ Mesmo com créditos, recomenda-se sempre manter budgets ativos.
+
+---
+
+## 🛠️ Como usar
+
+### 1️⃣ Inicializar o Terraform
+
+```bash
+terraform init
+```
+
+---
+
+### 2️⃣ Validar configuração
+
+```bash
+terraform validate
+```
+
+---
+
+### 3️⃣ Planejar infraestrutura
+
+```bash
+terraform plan
+```
+
+---
+
+### 4️⃣ Aplicar
+
+```bash
+terraform apply
+```
+
+Ao final, será exibido:
 
 ```text
-Cliente (curl/Postman)  
-   ↓  
-API Gateway (POST /v1/echo)  
-   ↓  
-Lambda (lambda/echo_handler.py)  
-   ↓  
-Resposta JSON
+api_invoke_url = https://515no9r44i.execute-api.us-east-1.amazonaws.com/
+```
+
+---
+
+### 5️⃣ Testar
+
+```bash
+curl https://515no9r44i.execute-api.us-east-1.amazonaws.com/health
+```
+
+---
+
+## 🧹 Destroy (opcional)
+
+Para remover toda a infraestrutura:
+
+```bash
+terraform destroy
+```
+
+---
+
+## 🧠 Observações Importantes
+
+* Logs da Lambda ficam disponíveis no **CloudWatch**
+* O Stage da API é `$default`
+* Não é necessário deploy manual da API Gateway (HTTP API faz auto-deploy)
+* O arquivo `terraform.tfstate` **não deve ser versionado**
+
+---
+
+---
+
+## 📄 Licença
+
+Este projeto é livre para uso educacional e profissional.
+
+---
+
+🚀 *Projeto criado como exercício prático de AWS + Terraform com foco em clareza, baixo custo e boas práticas.*
